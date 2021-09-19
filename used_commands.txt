@@ -1,0 +1,35 @@
+1.Написать сервис, который будет раз в 30 секунд мониторить лог на предмет наличия ключевого слова. Файл и слово должны задаваться в /etc/sysconfig
+
+cat << EOF > /etc/sysconfig/watchlog
+cat << EOF > /opt/watchlog.sh
+chmod +x /opt/watchlog.sh
+cat << EOF > /usr/lib/systemd/system/watchlog.service
+cat << EOF > /usr/lib/systemd/system/watchlog.timer
+vi /var/log/watchlog.log
+systemctl start watchlog.timer
+tail -f /var/log/messages
+
+-----------------------------------------------------------------------------------------------------------
+2.Из epel установить spawn-fcgi и переписать init-скрипт на unit-файл. Имя сервиса должно также называться.
+
+yum install epel-release -y && yum install spawn-fcgi php php-cli
+nano /etc/sysconfig/spawn-fcgi
+cat /etc/sysconfig/spawn-fcgi
+cat << EOF > /etc/systemd/system/spawn-fcgi.service
+systemctl start spawn-fcgi
+^start^status
+
+-----------------------------------------------------------------------------------------------------------
+3.Дополнить юнит-файл apache httpd возможностью запустить несколько инстансов сервера с разными конфигами
+
+nano /usr/lib/systemd/system/httpd.service
+mv /usr/lib/systemd/system/httpd.service /usr/lib/systemd/system/httpd@.service
+nano /etc/sysconfig/httpd-first
+nano /etc/sysconfig/httpd-second
+cat /etc/sysconfig/httpd-*
+cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/first.conf
+cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/second.conf
+nano /etc/httpd/conf/second.conf
+systemctl start httpd@first
+systemctl start httpd@second
+ss -tnulp | grep httpd
